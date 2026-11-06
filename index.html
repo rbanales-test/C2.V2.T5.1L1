@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Topic 5.1: Physical Modelling Synthesis — Architecture &amp; Acoustic Behavior</title>
+  <style>
+    :root {
+      --coursera-blue: #0056D2;
+      --coursera-blue-focus: #00419E;
+      --text-dark: #1F1F1F;
+      --bg-light: #F8F9FA;
+      --card-bg: #FFFFFF;
+      --border-color: #D1D5DB;
+      --focus-outline: #FFB800;
+      --highlight-bg: #EBF3FF;
+      --accent-purple: #7C3AED;
+      --accent-bg: #F5F3FF;
+    }
+
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: var(--bg-light);
+      color: var(--text-dark);
+      display: flex;
+      justify-content: center;
+    }
+
+    .interactive-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      max-width: 760px;
+      width: 100%;
+      padding: 24px;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.25rem;
+      color: var(--text-dark);
+    }
+
+    p.lead-text {
+      font-size: 0.95rem;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    /* Section 1: Architecture Block Diagram */
+    .model-diagram-container {
+      background-color: #F9FAFB;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 18px 14px;
+      margin-bottom: 20px;
+    }
+
+    .flow-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .model-node {
+      flex: 1;
+      min-width: 160px;
+      background-color: #FFFFFF;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 10px;
+      text-align: center;
+    }
+
+    .node-tag {
+      display: block;
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .node-tag.exciter {
+      color: var(--accent-purple);
+    }
+
+    .node-tag.resonator {
+      color: var(--coursera-blue);
+    }
+
+    .node-name {
+      display: block;
+      font-weight: 700;
+      font-size: 0.95rem;
+      margin: 2px 0;
+    }
+
+    .node-desc {
+      display: block;
+      font-size: 0.75rem;
+      color: #4B5563;
+    }
+
+    .flow-arrow {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: var(--coursera-blue);
+      user-select: none;
+    }
+
+    .output-node {
+      background-color: #E5E7EB;
+      border: 2px solid #9CA3AF;
+      border-radius: 6px;
+      padding: 12px 16px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: var(--text-dark);
+      text-align: center;
+      min-width: 120px;
+    }
+
+    /* Section 2: Property Selectors */
+    .properties-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+
+    .property-card {
+      background-color: #FFFFFF;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 14px;
+    }
+
+    .property-title {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: #4B5563;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .buttons-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 8px;
+    }
+
+    .btn-choice {
+      background-color: #F3F4F6;
+      border: 2px solid var(--border-color);
+      border-radius: 6px;
+      padding: 10px 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      color: var(--text-dark);
+      text-align: center;
+      transition: all 0.2s ease;
+    }
+
+    .btn-choice:focus {
+      outline: 3px solid var(--focus-outline);
+      outline-offset: 2px;
+    }
+
+    .btn-choice[aria-pressed="true"] {
+      background-color: var(--highlight-bg);
+      border-color: var(--coursera-blue);
+      color: var(--coursera-blue);
+      font-weight: 700;
+    }
+
+    /* Visual: Damping Indicator */
+    .damping-visual-box {
+      background-color: #F9FAFB;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-top: 10px;
+      font-family: monospace;
+      font-size: 0.95rem;
+      color: #1F1F1F;
+    }
+
+    .damping-label {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: #6B7280;
+      text-transform: uppercase;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      margin-bottom: 4px;
+      display: block;
+    }
+
+    /* Audio Action Row */
+    .audio-action-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .btn-audio {
+      padding: 12px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      color: #FFFFFF;
+      background-color: var(--coursera-blue);
+      border: 2px solid var(--coursera-blue-focus);
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-audio:focus {
+      outline: 3px solid var(--focus-outline);
+      outline-offset: 2px;
+    }
+
+    .audio-hint {
+      font-size: 0.88rem;
+      color: #4B5563;
+    }
+
+    /* Screen Reader Accessible Live Status Card */
+    .info-card {
+      background-color: var(--highlight-bg);
+      border-left: 4px solid var(--coursera-blue);
+      padding: 16px;
+      border-radius: 0 6px 6px 0;
+      line-height: 1.5;
+    }
+
+    .info-card h3 {
+      margin-top: 0;
+      margin-bottom: 6px;
+      font-size: 1rem;
+      color: var(--text-dark);
+    }
+
+    .info-card p {
+      margin: 0;
+      font-size: 0.92rem;
+    }
+
+    .info-card .analogy-box {
+      margin-top: 8px;
+      font-size: 0.88rem;
+      color: #374151;
+    }
+
+    .footer-note {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: #4B5563;
+      border-top: 1px solid var(--border-color);
+      padding-top: 12px;
+      line-height: 1.4;
+    }
+  </style>
+</head>
+<body>
+
+  <main class="interactive-card" role="region" aria-labelledby="pm-title">
+    <h2 id="pm-title">Topic 5.1: Physical Modelling Synthesis Architecture</h2>
+    <p class="lead-text">
+      Physical modeling makes sound by copying how a real object vibrates. Instead of a stored waveform, the synth calculates the physical behavior of a real object. Select physical properties below to observe how excitation, damping, and stiffness sculpt acoustic responses.
+    </p>
+
+    <!-- Architecture Diagram: Excitation -> Resonator -> Sound -->
+    <div class="model-diagram-container" role="region" aria-label="Physical Model Signal Flow">
+      <div class="flow-row">
+        <!-- Excitation -->
+        <div class="model-node">
+          <span class="node-tag exciter">Component 1</span>
+          <span class="node-name" id="label-exciter">Excitation (Strike / Pluck)</span>
+          <span class="node-desc">What starts the vibration</span>
+        </div>
+
+        <span class="flow-arrow" aria-hidden="true">──►</span>
+
+        <!-- Resonator -->
+        <div class="model-node">
+          <span class="node-tag resonator">Component 2</span>
+          <span class="node-name" id="label-resonator">Resonator (String / Bar)</span>
+          <span class="node-desc">What vibrates</span>
+        </div>
+
+        <span class="flow-arrow" aria-hidden="true">──►</span>
+
+        <!-- Sound -->
+        <div class="output-node">
+          Sound
+          <span class="node-desc">What you hear</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Properties Selection Grid -->
+    <div class="properties-grid">
+      <!-- 1. Excitation Mechanism -->
+      <div class="property-card">
+        <span class="property-title">1. Excitation (What Starts It)</span>
+        <div class="buttons-row" role="group" aria-label="Excitation Type">
+          <button class="btn-choice" id="exc-strike" aria-pressed="true">Strike / Pluck (Impulse)</button>
+          <button class="btn-choice" id="exc-bow" aria-pressed="false">Bowed / Friction (Continuous)</button>
+        </div>
+      </div>
+
+      <!-- 2. Damping (Energy Loss) -->
+      <div class="property-card">
+        <span class="property-title">2. Damping (How Quickly Vibration Loses Energy)</span>
+        <div class="buttons-row" role="group" aria-label="Damping Level">
+          <button class="btn-choice" id="damp-low" aria-pressed="false">Low Damping (Long, Ringing)</button>
+          <button class="btn-choice" id="damp-high" aria-pressed="true">High Damping (Short, Muted)</button>
+        </div>
+
+        <!-- Text/Visual Damping Representation -->
+        <div class="damping-visual-box" aria-hidden="true">
+          <span class="damping-label">Visual Damping Profile:</span>
+          <span id="damping-ascii-bar">High damping:  ▇▅▂·             short, muted</span>
+        </div>
+      </div>
+
+      <!-- 3. Stiffness (Material Rigidity) -->
+      <div class="property-card">
+        <span class="property-title">3. Stiffness (Material Rigidity)</span>
+        <div class="buttons-row" role="group" aria-label="Stiffness Setting">
+          <button class="btn-choice" id="stiff-low" aria-pressed="true">Low Stiffness (Flexible String)</button>
+          <button class="btn-choice" id="stiff-high" aria-pressed="false">High Stiffness (Rigid Metal Bar)</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Audition Section -->
+    <div class="audio-action-row">
+      <button id="btn-play" class="btn-audio" aria-label="Audition physical modeling response with current parameters">
+        ▶ Audition Physical Model
+      </button>
+      <span class="audio-hint" id="audio-desc">Listening to: Struck string with High Damping and Low Stiffness.</span>
+    </div>
+
+    <!-- Screen Reader Accessible Live Status Card -->
+    <div id="status-panel" class="info-card" role="status" aria-live="polite">
+      <h3 id="panel-title">Physical Model: Struck String (High Damping, Low Stiffness)</h3>
+      <p id="panel-desc">
+        The excitation is a sharp strike/pluck. High damping means the vibration loses energy quickly (like putting a hand on a bell). Low stiffness produces harmonic, musical string vibration.
+      </p>
+      <div class="analogy-box" id="panel-analogy">
+        <strong>Analogy: a plastic ruler.</strong> Hold a ruler over the table edge and flick the end. The flick is the excitation. The ruler is the resonator. Flick it harder and you get a louder, brighter sound.
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <strong>Why this matters for MIDI &amp; MPE:</strong> This is the family closest to real playing. Aftertouch can stand for bow pressure, the mod wheel for breath, and velocity for how hard a string or bar is struck. Standards like MPE (MIDI Polyphonic Expression, which gives each note its own pitch and pressure) suit these instruments especially well.
+    </div>
+  </main>
+
+  <script>
+    // Strict text descriptions and parameters from Topic 5.1
+    let activeExcitation = 'strike'; // 'strike' or 'bow'
+    let activeDamping = 'high';      // 'low' or 'high'
+    let activeStiffness = 'low';     // 'low' or 'high'
+    let audioCtx = null;
+
+    const btnsExc = {
+      strike: document.getElementById('exc-strike'),
+      bow: document.getElementById('exc-bow')
+    };
+
+    const btnsDamp = {
+      low: document.getElementById('damp-low'),
+      high: document.getElementById('damp-high')
+    };
+
+    const btnsStiff = {
+      low: document.getElementById('stiff-low'),
+      high: document.getElementById('stiff-high')
+    };
+
+    const labelExciter = document.getElementById('label-exciter');
+    const labelResonator = document.getElementById('label-resonator');
+    const dampingAsciiBar = document.getElementById('damping-ascii-bar');
+    const panelTitle = document.getElementById('panel-title');
+    const panelDesc = document.getElementById('panel-desc');
+    const panelAnalogy = document.getElementById('panel-analogy');
+    const audioDesc = document.getElementById('audio-desc');
+    const btnPlay = document.getElementById('btn-play');
+
+    function updateUI() {
+      Object.keys(btnsExc).forEach(k => btnsExc[k].setAttribute('aria-pressed', k === activeExcitation));
+      Object.keys(btnsDamp).forEach(k => btnsDamp[k].setAttribute('aria-pressed', k === activeDamping));
+      Object.keys(btnsStiff).forEach(k => btnsStiff[k].setAttribute('aria-pressed', k === activeStiffness));
+
+      labelExciter.textContent = activeExcitation === 'strike' ? "Excitation (Strike / Pluck)" : "Excitation (Bowed / Friction)";
+      labelResonator.textContent = activeStiffness === 'low' ? "Resonator (Flexible String)" : "Resonator (Stiff Metal Bar)";
+
+      if (activeDamping === 'high') {
+        dampingAsciiBar.textContent = "High damping:  ▇▅▂·             short, muted";
+      } else {
+        dampingAsciiBar.textContent = "Low damping:   ▇▇▇▆▆▅▅▄▄▃▃▂▂▁   long, ringing";
+      }
+
+      // Contextual title & description
+      const excText = activeExcitation === 'strike' ? "Struck" : "Bowed";
+      const resText = activeStiffness === 'low' ? "String" : "Metal Bar";
+      const dampText = activeDamping === 'high' ? "High Damping" : "Low Damping";
+      const stiffText = activeStiffness === 'low' ? "Low Stiffness" : "High Stiffness";
+
+      panelTitle.textContent = `Physical Model: ${excText} ${resText} (${dampText}, ${stiffText})`;
+
+      let descString = "";
+      if (activeExcitation === 'strike') {
+        descString += "The excitation is what starts the vibration: a pluck or strike. ";
+      } else {
+        descString += "The excitation is a continuous friction or bow across the object. ";
+      }
+
+      if (activeDamping === 'high') {
+        descString += "With high damping, the sound dies away after a few steps: short and muted (like putting a hand on a bell). ";
+      } else {
+        descString += "With low damping, vibration loses energy slowly: long and ringing. ";
+      }
+
+      if (activeStiffness === 'high') {
+        descString += "Stiffness is how rigid the material is: stiff materials, like a piano wire or a thick metal bar, sound more metallic and bell-like due to inharmonic dispersion.";
+      } else {
+        descString += "Flexible strings and air columns give smooth, musical, and harmonic tones.";
+      }
+
+      panelDesc.textContent = descString;
+      panelAnalogy.innerHTML = "<strong>Analogy: a plastic ruler.</strong> Hold a ruler over the table edge and flick the end. The flick is the excitation. The ruler is the resonator. Flick it harder and you get a louder, brighter sound. Real instruments lose high notes first, so sound starts bright and gets warmer.";
+      audioDesc.textContent = `Listening to: ${excText} ${resText} with ${dampText}.`;
+    }
+
+    Object.keys(btnsExc).forEach(k => {
+      btnsExc[k].addEventListener('click', () => { activeExcitation = k; updateUI(); });
+    });
+    Object.keys(btnsDamp).forEach(k => {
+      btnsDamp[k].addEventListener('click', () => { activeDamping = k; updateUI(); });
+    });
+    Object.keys(btnsStiff).forEach(k => {
+      btnsStiff[k].addEventListener('click', () => { activeStiffness = k; updateUI(); });
+    });
+
+    // Real-Time Physical Modeling Synthesis
+    btnPlay.addEventListener('click', () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+
+      const now = audioCtx.currentTime;
+      const baseFreq = 220.0; // A3
+
+      // Damping sets the decay duration
+      const decayDuration = activeDamping === 'high' ? 0.35 : 2.0;
+      const totalDuration = activeExcitation === 'bow' ? (1.0 + decayDuration) : decayDuration;
+
+      // Master output gain
+      const masterOut = audioCtx.createGain();
+      masterOut.gain.setValueAtTime(0.0001, now);
+      masterOut.gain.linearRampToValueAtTime(0.35, now + 0.02);
+      masterOut.gain.setValueAtTime(0.35, now + (activeExcitation === 'bow' ? 1.0 : 0.05));
+      masterOut.gain.exponentialRampToValueAtTime(0.0001, now + totalDuration);
+      masterOut.connect(audioCtx.destination);
+
+      // Resonator modes: Low stiffness = integer harmonic ratios; High stiffness = inharmonic metal modes
+      const partialRatios = activeStiffness === 'low' 
+        ? [1.0, 2.0, 3.0, 4.0] 
+        : [1.0, 1.48, 2.32, 3.15]; // Inharmonic bar/stiff plate modes
+
+      const partialGains = [0.4, 0.25, 0.15, 0.1];
+
+      partialRatios.forEach((ratio, idx) => {
+        const modeFreq = baseFreq * ratio;
+        const resFilter = audioCtx.createBiquadFilter();
+        resFilter.type = 'bandpass';
+        resFilter.frequency.setValueAtTime(modeFreq, now);
+
+        // Low damping = sharp high-Q resonance; High damping = low-Q fast energy loss
+        resFilter.Q.setValueAtTime(activeDamping === 'high' ? 12.0 : 45.0, now);
+
+        const modeGain = audioCtx.createGain();
+        modeGain.gain.setValueAtTime(partialGains[idx], now);
+
+        // Exciter Node
+        if (activeExcitation === 'strike') {
+          // Sharp impulse burst (pluck/strike transient)
+          const burstSize = audioCtx.sampleRate * 0.008; // 8 ms burst
+          const burstBuf = audioCtx.createBuffer(1, burstSize, audioCtx.sampleRate);
+          const data = burstBuf.getChannelData(0);
+          for (let i = 0; i < burstSize; i++) {
+            data[i] = (Math.random() * 2 - 1);
+          }
+          const exciterSource = audioCtx.createBufferSource();
+          exciterSource.buffer = burstBuf;
+
+          exciterSource.connect(resFilter);
+          resFilter.connect(modeGain);
+          modeGain.connect(masterOut);
+
+          exciterSource.start(now);
+          exciterSource.stop(now + 0.01);
+
+        } else {
+          // Continuous Bow / Friction Excitation: filtered noise + friction sawtooth
+          const bowOsc = audioCtx.createOscillator();
+          bowOsc.type = 'sawtooth';
+          bowOsc.frequency.setValueAtTime(baseFreq, now);
+
+          const bowGain = audioCtx.createGain();
+          bowGain.gain.setValueAtTime(0.0001, now);
+          bowGain.gain.linearRampToValueAtTime(0.2, now + 0.2); // Slow bow swell
+          bowGain.gain.setValueAtTime(0.2, now + 0.9);
+          bowGain.gain.linearRampToValueAtTime(0.0001, now + 1.0); // Lift bow
+
+          bowOsc.connect(resFilter);
+          resFilter.connect(modeGain);
+          modeGain.connect(bowGain);
+          bowGain.connect(masterOut);
+
+          bowOsc.start(now);
+          bowOsc.stop(now + 1.1);
+        }
+      });
+    });
+
+    updateUI();
+  </script>
+</body>
+</html>
